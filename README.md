@@ -29,6 +29,21 @@ Those metas are to place on your methods you want to alterate the behaviour.
 
 ```
 
+# Npm/Yarn configuration
+
+You have to load the lodash js file dependencies to make it work properly.
+Edit your package.json file and place the following at the end of your dependencies node : 
+```js
+"dependencies": {
+    ...
+    "lodash.throttle": "^4.1.1",
+    "lodash.debounce": "^4.0.8"
+
+  },
+```
+
+And then, don't forget to run the dependencies update with npm install or yarn install.
+
 # Demo
 The current code sample if for react-native target, but it is quite self explanatory
 
