@@ -67,11 +67,15 @@ class Lodash
 						ret: f.ret,
 						args: f.args,
 					}
-					
+
+					var newFieldsAccess = field.field.access.copy();
+					// on nettoie un peu ce qui pourrait gener
+					newFieldsAccess.remove(Access.APublic);
+					newFieldsAccess.remove(Access.AInline);
 					// On recréé le champ d'origine mais renommé et on l'appelera depuis la nouvelle définition de la méthode
                     var untrotthedDef = { 
 						meta: [], 
-						access: [APrivate], 
+						access: newFieldsAccess,
 						kind: field.field.kind, 
 						name: '__un${prefixName}_${fieldName}',
 						pos: Context.currentPos(),
@@ -80,7 +84,7 @@ class Lodash
 
 					var propertyField:Field = {
 						name: '${prefixName}_${fieldName}',
-						access: field.field.access,
+						access: newFieldsAccess,
 						kind: FieldType.FVar(ComplexType.TFunction(argumentsType, returnType)),
 						pos: Context.currentPos(),
 					};
