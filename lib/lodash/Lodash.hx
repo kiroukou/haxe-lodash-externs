@@ -52,7 +52,6 @@ class Lodash
 
 					var throttleArguments:Array<haxe.macro.Expr> = [macro $i{'__un${prefixName}_${fieldName}'}];
 					if(meta.params[0] != null) throttleArguments.push(meta.params[0]);
-					//TODO improvement : make type checking here eventually
 					if(meta.params[1] != null) throttleArguments.push(meta.params[1]);
 					
 					var exprCall = 	if( field.isThrottle ) macro lib.lodash.Lodash.Throttle.throttle($a{throttleArguments} );
