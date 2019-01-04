@@ -1,0 +1,13 @@
+{
+    "name": "haxe-lodash",
+    "url" : "https://github.com/kiroukou/haxe-lodash-externs",  
+    "license": "Apache License 2.0",
+    "classPath": ".",
+    "tags": ["web", "js","lodash"],
+    "description": "An extern for the lodash JS library",
+    "version": "1.0.0",
+    "releasenote": "",
+    "contributors": ["kiroukou"],
+    "dependencies": {
+    }
+  }
