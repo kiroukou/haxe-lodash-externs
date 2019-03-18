@@ -35,6 +35,71 @@ class Lodash
 		for( field in lodashFields )
 			classFields.remove(field.field);
 		
+
+//CLEANING METHODS ANS PROPERTIES
+		var lodashClean = "__cleanLodashList";
+		var propertyCleanListField:Field = {
+			name: lodashClean,
+			access: [Access.APrivate],
+			kind: FieldType.FVar(macro: List<Void->Void>),//can't initialize here due to hxgenjs unsupported feature , macro new List()
+			pos: Context.currentPos(),
+		};
+		var lodashStaticClean = "__cleanLodashStaticList";
+		var propertyCleanStaticListField:Field = {
+			name: lodashStaticClean,
+			access: [Access.APrivate, Access.AStatic],
+			kind: FieldType.FVar(macro: List<Void->Void>),
+			pos: Context.currentPos(),
+		};
+		var myCleanFunc:Function = {
+			expr: macro {
+				#if debug trace("clean lodash methods"); #end
+				if( $i{lodashClean} == null ) return;
+				for(f in $i{lodashClean})
+					if( f != null ) f();
+				$i{lodashClean} = new List();
+			},
+			ret: macro: Void,
+			args: [],
+		}
+		var cleanField:Field = {
+			name: 'lodashDispose',
+			access: [Access.APrivate],
+			kind: FieldType.FFun(myCleanFunc),
+			pos: Context.currentPos(),
+		};
+		var myCleanStaticFunc:Function = {
+			expr: macro {
+				#if debug trace("clean lodash static methods"); #end
+				if( $i{lodashStaticClean} == null ) return;
+				for(f in $i{lodashStaticClean})
+					if( f != null ) f();
+				$i{lodashStaticClean} = new List();
+			},
+			ret: macro: Void,
+			args: [],
+		}
+		var cleanStaticField:Field = {
+			name: 'lodashDisposeStatic',
+			access: [Access.AStatic],
+			kind: FieldType.FFun(myCleanStaticFunc),
+			pos: Context.currentPos(),
+		};
+
+		#if (debug && macro_debug) 
+		trace(printer.printField(propertyCleanListField)); 
+		trace(printer.printField(propertyCleanStaticListField)); 
+		trace(printer.printField(cleanField)); 
+		trace(printer.printField(cleanStaticField)); 
+		#end
+
+		classFields.push(propertyCleanListField);
+		classFields.push(propertyCleanStaticListField);
+		classFields.push(cleanField);
+		classFields.push(cleanStaticField);
+
+//PARSING FIELDS
+
 		for( field in lodashFields )
 		{
 			var meta = field.meta;
@@ -44,10 +109,11 @@ class Lodash
 			switch( field.field.kind )
 			{
 				case FFun( f ):
+				
 					var arguments = f.args.map(function(a) return macro $i{a.name});
 					var argumentsType = f.args.map(function(a) return a.type);
 					var returnType = f.ret != null ? f.ret : macro :Void;
-
+					
 					var prefixName = field.isThrottle ? 'throttled' : 'debounced';
 
 					var throttleArguments:Array<haxe.macro.Expr> = [macro $i{'__un${prefixName}_${fieldName}'}];
@@ -57,10 +123,21 @@ class Lodash
 					var exprCall = 	if( field.isThrottle ) macro lib.lodash.Lodash.Throttle.throttle($a{throttleArguments} );
 									else macro lib.lodash.Lodash.Debounce.debounce($a{throttleArguments} );
 					var propName = '${prefixName}_${fieldName}';
+
+					var cleanIdentifier;				
+					if( field.field.access != null && Lambda.has(field.field.access, Access.AStatic) ) {
+						cleanIdentifier = lodashStaticClean;
+					} else {
+						cleanIdentifier = lodashClean;
+					}
+
 					var myFunc:Function = {
 						expr: macro {
 							if( $i{propName} == null ) {
-								$i{propName} = cast $exprCall;
+								var tmp = $exprCall;
+								$i{propName} = cast tmp;
+								if( $i{cleanIdentifier} == null ) $i{cleanIdentifier} = new List();
+								$i{cleanIdentifier}.add(tmp.cancel);
 							}
 							return $i{propName}($a{arguments});
 						},
@@ -77,13 +154,13 @@ class Lodash
 						meta: [], 
 						access: newFieldsAccess,
 						kind: field.field.kind, 
-						name: '__un${prefixName}_${fieldName}',
+						name: '__un'+propName,
 						pos: Context.currentPos(),
 						doc:null,
 					};
 
 					var propertyField:Field = {
-						name: '${prefixName}_${fieldName}',
+						name: propName,
 						access: newFieldsAccess,
 						kind: FieldType.FVar(ComplexType.TFunction(argumentsType, returnType)),
 						pos: Context.currentPos(),
@@ -125,7 +202,7 @@ typedef ThrottleOptions = {
 @:jsRequire('lodash.throttle')
 extern class Throttle {
     @:selfCall
-    static public function throttle<T:haxe.Constraints.Function>(f:T, ? wait : Int = 0, ? options : ThrottleOptions) : T;
+    static public function throttle<T:haxe.Constraints.Function>(f:T, ? wait:Int = 0, ? options:ThrottleOptions):CancellableFunction<T>;
 }
 
 typedef DebounceOptions = {
@@ -137,6 +214,11 @@ typedef DebounceOptions = {
 @:jsRequire('lodash.debounce')
 extern class Debounce {
     @:selfCall
-    static public function debounce<T:haxe.Constraints.Function>(f:T, ? wait : Int = 0, ? options : DebounceOptions) : T;
+    static public function debounce<T:haxe.Constraints.Function>(f:T, ? wait:Int = 0, ? options:DebounceOptions):CancellableFunction<T>;
+}
+
+@:callable
+abstract CancellableFunction<T>(T) from T to T {
+    public function cancel() untyped (this.cancel)();
 }
 #end

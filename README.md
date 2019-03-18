@@ -29,6 +29,17 @@ Those metas are to place on your methods you want to alterate the behaviour.
 
 ```
 
+# Cleaning
+
+The library gives you some entry points to clean the potential debouncing/throttling callbacks. In environements like react, that could lead to some undesired behaviours when component is unmounted for example.
+
+So here are the methods you can call to clean the remaining functions : 
+```
+myInstance.lodashDispose();
+MyClass.lodashDisposeStatic();
+```
+
+
 # Npm/Yarn configuration
 
 You have to load the lodash js file dependencies to make it work properly.
