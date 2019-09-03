@@ -109,9 +109,13 @@ class Lodash
 			switch( field.field.kind )
 			{
 				case FFun( f ):
-				
-					var arguments = f.args.map(function(a) return macro $i{a.name});
-					var argumentsType = f.args.map(function(a) return a.type);
+					// handle the "_" argument which should be ignored
+					var arguments = f.args.map(function(a) return (a.name == '_') ? null : macro $i{a.name});
+					var argumentsType = f.args.map(function(a) return(a.name == '_') ? null : a.type);
+					// strip null values
+					arguments = arguments.filter(function(n) return n != null);
+					argumentsType = argumentsType.filter(function(n) return n != null);
+					
 					var returnType = f.ret != null ? f.ret : macro :Void;
 					
 					var prefixName = field.isThrottle ? 'throttled' : 'debounced';
