@@ -41,14 +41,14 @@ class Lodash
 		var propertyCleanListField:Field = {
 			name: lodashClean,
 			access: [Access.APrivate],
-			kind: FieldType.FVar(macro: List<Void->Void>),//can't initialize here due to hxgenjs unsupported feature , macro new List()
+			kind: FieldType.FVar(macro: std.List<Void->Void>),//can't initialize here due to hxgenjs unsupported feature , macro new List()
 			pos: Context.currentPos(),
 		};
 		var lodashStaticClean = "__cleanLodashStaticList";
 		var propertyCleanStaticListField:Field = {
 			name: lodashStaticClean,
 			access: [Access.APrivate, Access.AStatic],
-			kind: FieldType.FVar(macro: List<Void->Void>),
+			kind: FieldType.FVar(macro: std.List<Void->Void>),
 			pos: Context.currentPos(),
 		};
 		var myCleanFunc:Function = {
@@ -57,7 +57,7 @@ class Lodash
 				if( $i{lodashClean} == null ) return;
 				for(f in $i{lodashClean})
 					if( f != null ) f();
-				$i{lodashClean} = new List();
+				$i{lodashClean} = new std.List();
 			},
 			ret: macro: Void,
 			args: [],
@@ -74,7 +74,7 @@ class Lodash
 				if( $i{lodashStaticClean} == null ) return;
 				for(f in $i{lodashStaticClean})
 					if( f != null ) f();
-				$i{lodashStaticClean} = new List();
+				$i{lodashStaticClean} = new std.List();
 			},
 			ret: macro: Void,
 			args: [],
@@ -136,7 +136,7 @@ class Lodash
 							if( $i{propName} == null ) {
 								var tmp = $exprCall;
 								$i{propName} = cast tmp;
-								if( $i{cleanIdentifier} == null ) $i{cleanIdentifier} = new List();
+								if( $i{cleanIdentifier} == null ) $i{cleanIdentifier} = new std.List();
 								$i{cleanIdentifier}.add(tmp.cancel);
 							}
 							return $i{propName}($a{arguments});
